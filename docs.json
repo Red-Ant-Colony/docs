@@ -91,13 +91,13 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "https://api.whatsapp.com/send?phone=6282275678900&text=Hai%20ZYCAS%20Team!%0ASaya%20baru%20mampir%20ke%20website%20Zycas%20dan%20tertarik%20ingin%20tahu%20lebih%20lanjut%20soal%20aplikasinya.%0ABoleh%20minta%20informasinya%3F%20%F0%9F%98%8A"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "href": "https://zycaspos.com"
     }
   },
   "contextual": {
