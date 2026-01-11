@@ -1,0 +1,12 @@
+{
+  "author": "rac-dev",
+  "devDependencies": {
+    "mintlify": "^4.2.269"
+  },
+  "scripts": {
+    "docs": "mintlify dev"
+  },
+  "dependencies": {
+    "mammoth": "^1.11.0"
+  }
+}

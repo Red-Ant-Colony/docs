@@ -7,85 +7,70 @@
     "light": "#07C983",
     "dark": "#15803D"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Panduan Zycas",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Memulai",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "guide-book/autentikasi",
+              "guide-book/dashboard"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Transaksi",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "guide-book/kasir",
+              "guide-book/riwayat-transaksi",
+              "guide-book/transaksi-offline",
+              "guide-book/retur-pesanan",
+              "guide-book/hutang"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Produk & Stok",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "guide-book/produk",
+              "guide-book/stok-produk",
+              "guide-book/stok-opname",
+              "guide-book/stok-paduan",
+              "guide-book/riwayat-akan-kadaluarsa",
+              "guide-book/riwayat-kadaluarsa"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Master Data",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
+              "guide-book/master-data",
+              "guide-book/supplier",
+              "guide-book/membership",
+              "guide-book/voucher"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Pengguna",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "guide-book/user",
+              "guide-book/profile"
+            ]
+          },
+          {
+            "group": "Laporan",
+            "pages": [
+              "guide-book/laporan-kasir"
             ]
           }
         ]
       }
     ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
+    "global": {}
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/light.png",
+    "dark": "/logo/dark.png"
   },
   "navbar": {
     "links": [
