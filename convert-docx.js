@@ -31,6 +31,158 @@ const fileMapping = {
   'Voucher - Zycas Guide Book.docx': { slug: 'voucher', title: 'Voucher', description: 'Panduan pengelolaan voucher', icon: 'ticket' },
 };
 
+// Fix numbered lists - renumber ALL items sequentially
+function fixNumberedLists(markdown) {
+  const lines = markdown.split('\n');
+  let listCounter = 0;
+  let inList = false;
+  let lastNumberedLine = -1;
+
+  const result = lines.map((line, index) => {
+    const trimmed = line.trim();
+
+    // Check if this is an image line
+    const isImage = /^!\[/.test(trimmed) || trimmed.includes('![');
+
+    // Check if this is a numbered list item (starting with any number)
+    const listMatch = line.match(/^(\d+)\.\s+(.*)$/);
+
+    if (listMatch) {
+      const [, num, content] = listMatch;
+      const numVal = parseInt(num, 10);
+
+      // Check how many lines since last numbered item
+      const gapSize = index - lastNumberedLine;
+
+      // Decide if this is a new list or continuation
+      if (numVal === 1 && (!inList || gapSize > 15)) {
+        // Start new list - gap is large or we weren't in a list
+        listCounter = 1;
+        inList = true;
+      } else if (inList) {
+        // Continue the list - increment regardless of original number
+        listCounter++;
+      } else {
+        // Not in list but got a number - start new list
+        listCounter = 1;
+        inList = true;
+      }
+
+      lastNumberedLine = index;
+      return `${listCounter}. ${content}`;
+    }
+
+    // Empty line or image - don't break list context
+    if (trimmed === '' || isImage) {
+      return line;
+    }
+
+    // Bullet points - keep list context but don't affect numbering
+    if (/^[-*]\s+/.test(trimmed)) {
+      return line;
+    }
+
+    // Indented content (sub-lists, code blocks) - keep list context
+    if (/^\s+/.test(line) && inList) {
+      return line;
+    }
+
+    // Headings end the list
+    if (/^#{1,6}\s+/.test(trimmed)) {
+      inList = false;
+      listCounter = 0;
+      return line;
+    }
+
+    // Other content - check if it looks like prose (long text)
+    // Short lines could be between list items
+    if (trimmed.length > 100) {
+      inList = false;
+      listCounter = 0;
+    }
+
+    return line;
+  });
+
+  return result.join('\n');
+}
+
+// Fix tables - convert plain text table patterns to markdown tables
+function fixTables(markdown) {
+  const lines = markdown.split('\n');
+  const result = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i].trim();
+
+    // Detect table header pattern: "Keterangan:" or "Keterangan :" followed by table headers
+    if (line === 'Keterangan:' || line === 'Keterangan :') {
+      // Check if next lines look like table headers
+      let j = i + 1;
+      while (j < lines.length && lines[j].trim() === '') j++; // skip empty lines
+
+      // Check for header row pattern (No, Simbol, Keterangan)
+      const headers = [];
+      while (j < lines.length && lines[j].trim() !== '' && !lines[j].trim().match(/^\d+$/) && !lines[j].trim().startsWith('![')) {
+        headers.push(lines[j].trim());
+        j++;
+        while (j < lines.length && lines[j].trim() === '') j++;
+      }
+
+      if (headers.length >= 2 && headers.length <= 4) {
+        // Looks like a table - collect data rows
+        const rows = [];
+        let currentRow = [];
+
+        while (j < lines.length) {
+          const cellContent = lines[j].trim();
+
+          // Stop if we hit an image, heading, or other structural element
+          if (cellContent.startsWith('![') || cellContent.startsWith('#') ||
+              cellContent.startsWith('__') && cellContent.endsWith('__') && cellContent.length > 10) {
+            break;
+          }
+
+          // Skip empty lines between cells
+          if (cellContent === '') {
+            j++;
+            continue;
+          }
+
+          currentRow.push(cellContent);
+
+          // Check if row is complete
+          if (currentRow.length === headers.length) {
+            rows.push([...currentRow]);
+            currentRow = [];
+          }
+
+          j++;
+        }
+
+        // If we have valid data, create markdown table
+        if (rows.length > 0) {
+          result.push(''); // empty line before table
+          result.push('| ' + headers.join(' | ') + ' |');
+          result.push('| ' + headers.map(() => '---').join(' | ') + ' |');
+          for (const row of rows) {
+            result.push('| ' + row.join(' | ') + ' |');
+          }
+          result.push(''); // empty line after table
+          i = j;
+          continue;
+        }
+      }
+    }
+
+    result.push(lines[i]);
+    i++;
+  }
+
+  return result.join('\n');
+}
+
 async function convertDocx(docxPath, meta) {
   let imageCounter = 0;
 
@@ -71,6 +223,43 @@ async function convertDocx(docxPath, meta) {
 
   // Clean up any remaining problematic patterns
   markdown = markdown.replace(/🛈/g, '');
+
+  // Fix nested list patterns from mammoth - convert to regular numbered items
+  // Pattern: "- \n\t- \n\t\t1. content" or similar
+  markdown = markdown.replace(/^- \s*$/gm, ''); // Remove empty bullet lines
+  markdown = markdown.replace(/^\t+- \s*$/gm, ''); // Remove indented empty bullet lines
+  markdown = markdown.replace(/^\t+(\d+)\.\s+/gm, '$1. '); // Remove indentation from numbered items
+
+  // Fix numbered list sequencing - mammoth outputs all as "1."
+  // We need to renumber them sequentially within each list block
+  markdown = fixNumberedLists(markdown);
+
+  // Remove unnecessary escape characters
+  markdown = markdown.replace(/\\([.\-\[\]()])/g, '$1');
+
+  // Clean up anchor tags
+  markdown = markdown.replace(/<a id="[^"]*"><\/a>/g, '');
+
+  // Fix multiple images on same line - add newlines between them
+  markdown = markdown.replace(/(\!\[[^\]]*\]\([^)]+\))(\!\[)/g, '$1\n\n$2');
+
+  // Convert table-like patterns to markdown tables
+  markdown = fixTables(markdown);
+
+  // Remove empty headings
+  markdown = markdown.replace(/^#{1,6}\s*$/gm, '');
+
+  // Convert Information boxes to Note components
+  markdown = markdown.replace(/____\s*\n+__Information__\s*\n+([\s\S]*?)(?=\n\n\n|\n*$)/g, (match, content) => {
+    const cleanContent = content.trim();
+    return `<Note>\n${cleanContent}\n</Note>`;
+  });
+
+  // Remove excessive empty lines (more than 2 consecutive)
+  markdown = markdown.replace(/\n{4,}/g, '\n\n\n');
+
+  // Clean up lines that are just underscores
+  markdown = markdown.replace(/^_{4,}$/gm, '');
 
   // Create frontmatter
   const frontmatter = `---

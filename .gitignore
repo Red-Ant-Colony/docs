@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Mintlify
+.mintlify/
+
+# Build output
+.next/
+out/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temp files
+*.tmp
+*.temp
+
+# Conversion script (not needed in repo)
+convert-docx.js
+
+# Source DOCX files (optional - uncomment if you don't want these in repo)
+# Gude Book per Modul (Revisi)/
+# Markdown Guide Book/
